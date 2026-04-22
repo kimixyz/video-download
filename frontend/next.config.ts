@@ -12,13 +12,6 @@ const nextConfig: NextConfig = {
       ];
     }
     // In production (Vercel), route /api/* to the Python serverless function.
-    // The function receives the original path so FastAPI routing works correctly.
-    return [
-      {
-        source: "/api/:path*",
-        destination: "/api/index",
-      },
-    unction receives the original path so FastAPI routing works correctly.
     return [
       {
         source: "/api/:path*",
