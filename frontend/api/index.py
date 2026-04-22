@@ -29,6 +29,7 @@ app.add_middleware(
 
 
 @app.post("/api/parse", response_model=ParseResponse)
+@app.post("/parse", response_model=ParseResponse)
 async def parse(req: ParseRequest) -> ParseResponse:
     url = req.url.strip()
     if not url:
@@ -43,6 +44,7 @@ async def parse(req: ParseRequest) -> ParseResponse:
 
 
 @app.get("/api/download")
+@app.get("/download")
 async def download(
     url: str = Query(...),
     filename: str = Query("video.mp4"),
