@@ -1,0 +1,22 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="38" y1="30" x2="220" y2="226" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="166" y1="164" x2="214" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#60A5FA"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="224" height="224" rx="54" fill="url(#bg)"/>
+  <rect x="16" y="16" width="224" height="224" rx="54" stroke="#A78BFA" stroke-width="4"/>
+
+  <rect x="84" y="156" width="88" height="20" rx="10" fill="white"/>
+  <rect x="119" y="72" width="18" height="84" rx="9" fill="white"/>
+  <path d="M92 130L128 166L164 130" stroke="white" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="186" cy="186" r="26" fill="url(#badge)"/>
+  <path d="M177 172V200L199 186L177 172Z" fill="white"/>
+</svg>
