@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from models import ParseRequest, ParseResponse
-from parser import parse_video
+from video_parser import parse_video
 
 app = FastAPI(title="Video Parser API", version="1.0.0")
 
