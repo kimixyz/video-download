@@ -3,19 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async rewrites() {
     // In local development, proxy to the uvicorn backend at :8000.
-    if (process.env.NODE_ENV === "development") {
-      return [
-        {
-          source: "/api/:path*",
-          destination: "http://localhost:8000/api/:path*",
-        },
-      ];
+    // In production (Vercel), vercel.json handles /api/* routing.
+    if (process.env.NODE_ENV !== "development") {
+      return [];
     }
-    // In production (Vercel), route /api/* to the Python serverless function.
     return [
       {
         source: "/api/:path*",
-        destination: "/api/index",
+        destination: "http://localhost:8000/api/:path*",
       },
     ];
   },
