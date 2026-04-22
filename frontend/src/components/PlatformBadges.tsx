@@ -16,9 +16,15 @@ const PLATFORMS = [
     color: "from-orange-500 to-red-500",
     textColor: "text-white",
     icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M8 12l3 3 5-5" className="fill-none stroke-white stroke-2" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+        <circle cx="12" cy="12" r="9" fill="white" opacity="0.25" />
+        <path
+          d="M7.5 12.5l3 3 6-6"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     ),
   },
@@ -27,9 +33,23 @@ const PLATFORMS = [
     color: "from-red-500 to-red-600",
     textColor: "text-white",
     icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-        <rect x="3" y="3" width="18" height="18" rx="3" />
-        <path d="M8 8h8M8 12h8M8 16h5" className="fill-none stroke-white stroke-2 stroke-linecap-round" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+        <rect
+          x="4"
+          y="4"
+          width="16"
+          height="16"
+          rx="2"
+          stroke="white"
+          strokeWidth="1.5"
+          opacity="0.5"
+        />
+        <path
+          d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },

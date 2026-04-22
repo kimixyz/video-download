@@ -68,7 +68,9 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
 
       onResult(data as ParseResult);
     } catch (err) {
-      onError(err instanceof Error ? err.message : "网络错误，请检查后端服务是否运行");
+      onError(
+        err instanceof Error ? err.message : "网络错误，请检查后端服务是否运行",
+      );
     } finally {
       setLoading(false);
       onLoading(false);
@@ -85,7 +87,9 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
       if (text) {
         // Auto-extract URL from share text (e.g. Douyin/WeChat share strings)
         const match = text.match(/https?:\/\/[^\s，。！？、\u3000]+/);
-        const extracted = match ? match[0].replace(/[.,;:!?）)\]]+$/, "") : text;
+        const extracted = match
+          ? match[0].replace(/[.,;:!?）)\]]+$/, "")
+          : text;
         setUrl(extracted);
       }
     } catch {
@@ -95,15 +99,25 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="relative flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2 shadow-2xl">
+      <div className="relative flex items-center gap-1.5 sm:gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-1.5 sm:p-2 shadow-2xl">
         {/* paste icon */}
         <button
           onClick={handlePaste}
-          className="shrink-0 p-2 text-gray-400 hover:text-white transition-colors"
+          className="shrink-0 p-1.5 sm:p-2 text-gray-400 hover:text-white transition-colors"
           title="粘贴链接"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <svg
+            className="w-4 h-4 sm:w-5 sm:h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
           </svg>
         </button>
 
@@ -113,7 +127,7 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="粘贴抖音、B站、YouTube 等视频链接..."
-          className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-base py-2"
+          className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-sm sm:text-base py-1.5 sm:py-2 min-w-0"
           disabled={loading}
           autoComplete="off"
         />
@@ -121,10 +135,20 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
         {url && (
           <button
             onClick={() => setUrl("")}
-            className="shrink-0 p-2 text-gray-500 hover:text-white transition-colors"
+            className="shrink-0 p-1.5 sm:p-2 text-gray-500 hover:text-white transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
@@ -132,22 +156,47 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
         <button
           onClick={handleParse}
           disabled={loading}
-          className="shrink-0 flex items-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 shadow-lg"
+          className="shrink-0 flex items-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-3 py-2.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg"
         >
           {loading ? (
             <>
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <svg
+                className="w-4 h-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
-              解析中
+              <span className="hidden sm:inline">解析中</span>
             </>
           ) : (
             <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"
+                />
               </svg>
-              解析
+              <span className="hidden sm:inline">解析</span>
             </>
           )}
         </button>
