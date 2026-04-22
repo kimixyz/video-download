@@ -17,13 +17,13 @@ const PLATFORMS = [
     textColor: "text-white",
     icon: (
       <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-        <circle cx="12" cy="12" r="9" fill="white" opacity="0.25" />
         <path
-          d="M7.5 12.5l3 3 6-6"
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          d="M12.2 2.7c5 0 9.1 3.9 9.1 8.8 0 3.8-2.4 6.9-5.9 8.2-.8.3-1.3 1-1.5 1.8-.2 1-.9 1.6-1.9 1.6h-1.3c-1 0-1.8-.7-2-1.7-.2-.9-.8-1.6-1.6-2-2.9-1.3-4.8-4.1-4.8-7.3 0-5.1 4.4-9.4 9.9-9.4z"
+          fill="#ff1f3d"
+        />
+        <path
+          d="M10.45 9.35c0-.35.39-.57.69-.4l4.12 2.36c.31.18.31.63 0 .81l-4.12 2.36c-.3.17-.69-.05-.69-.4v-4.73z"
+          fill="white"
         />
       </svg>
     ),
@@ -34,22 +34,21 @@ const PLATFORMS = [
     textColor: "text-white",
     icon: (
       <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-        <rect
-          x="4"
-          y="4"
-          width="16"
-          height="16"
-          rx="2"
-          stroke="white"
-          strokeWidth="1.5"
-          opacity="0.5"
-        />
-        <path
-          d="M7.5 8.5h9M7.5 12h9M7.5 15.5h5"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
+        <rect x="2.8" y="4.1" width="18.4" height="15.8" rx="2.8" fill="white" />
+        <g transform="rotate(-2.8 12 12)">
+          <rect x="3.3" y="6.1" width="17.4" height="11.8" rx="1.5" fill="#ff3445" />
+          <text
+            x="12"
+            y="14.45"
+            textAnchor="middle"
+            fontSize="6.7"
+            fontWeight="700"
+            fill="white"
+            fontFamily="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif"
+          >
+            头条
+          </text>
+        </g>
       </svg>
     ),
   },
@@ -88,8 +87,25 @@ const PLATFORMS = [
     color: "from-red-500 to-orange-400",
     textColor: "text-white",
     icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-        <path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.613-2.759 5.049-6.739 5.443zM11.911 7.16c-.418-.063-.708-.418-.645-.836l.01-.059c.274-1.737 2.186-3.03 4.247-2.867 2.061.163 3.595 1.722 3.385 3.468-.21 1.742-2.065 2.964-4.126 2.802-.42-.033-.71-.396-.677-.816.033-.42.397-.71.817-.677 1.362.108 2.598-.66 2.736-1.745.138-1.086-.885-2.098-2.246-2.207-1.362-.108-2.607.71-2.798 1.81l-.01.059c-.055.417-.415.698-.833.643l-.01-.001zm8.86 5.285a.756.756 0 01-.85-.655.754.754 0 01.655-.849c2.177-.264 3.798-2.057 3.602-3.996-.195-1.938-2.143-3.34-4.347-3.106a.754.754 0 01-.849-.655.753.753 0 01.655-.849c2.857-.32 5.392 1.522 5.663 4.106.271 2.585-1.826 4.891-4.529 5.004zm-8.78 2.22c-2.16.234-3.822 1.7-3.715 3.28.106 1.58 1.939 2.668 4.098 2.434 2.162-.235 3.824-1.7 3.716-3.281-.108-1.581-1.937-2.668-4.098-2.433z" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
+        <ellipse cx="11" cy="13" rx="7.5" ry="5" stroke="white" strokeWidth="1.8" />
+        <circle cx="11" cy="13" r="2.1" fill="white" />
+        <circle cx="11" cy="13" r="0.9" fill="currentColor" />
+        <path
+          d="M14.8 5.3c1.7.1 3 .7 4 1.8s1.5 2.5 1.5 4.1"
+          stroke="white"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M14.2 7.8c1 .1 1.9.5 2.5 1.1.6.7.9 1.5 1 2.5"
+          stroke="white"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <circle cx="14.3" cy="8.3" r="1.2" fill="white" />
       </svg>
     ),
   },
