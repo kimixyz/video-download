@@ -32,6 +32,12 @@ app.add_middleware(
 )
 
 
+@app.get("/healthz")
+async def healthcheck() -> dict[str, str]:
+    """Lightweight healthcheck for Railway and other reverse proxies."""
+    return {"status": "ok"}
+
+
 # ── routes ─────────────────────────────────────────────────────────────────────
 
 @app.post("/api/parse", response_model=ParseResponse)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildApiUrl } from "@/lib/api";
 
 interface Props {
   onResult: (data: ParseResult) => void;
@@ -54,7 +55,7 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
     onError("");
 
     try {
-      const res = await fetch("/api/parse", {
+      const res = await fetch(buildApiUrl("/api/parse"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: extracted }),

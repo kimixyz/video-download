@@ -1,6 +1,7 @@
 "use client";
 
 import { VideoFormat } from "./VideoInput";
+import { buildDownloadUrl } from "@/lib/api";
 
 interface Props {
   formats: VideoFormat[];
@@ -32,12 +33,6 @@ function formatFileSize(bytes?: number): string {
   return `${mb.toFixed(1)} MB`;
 }
 
-function buildDownloadUrl(videoUrl: string, title: string, ext: string): string {
-  const encoded = encodeURIComponent(videoUrl);
-  const filename = encodeURIComponent(`${title}.${ext}`);
-  return `/api/download?url=${encoded}&filename=${filename}`;
-}
-
 export default function FormatList({ formats, title }: Props) {
   if (formats.length === 0) return null;
 
@@ -67,7 +62,7 @@ export default function FormatList({ formats, title }: Props) {
             </div>
 
             <a
-              href={buildDownloadUrl(fmt.url, title, fmt.ext)}
+              href={buildDownloadUrl(fmt.url, `${title}.${fmt.ext}`)}
               download
               className="flex items-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200 shadow"
             >

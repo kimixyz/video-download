@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    // Local dev only: proxy to uvicorn backend at :8000.
-    // On Vercel, file-based routing handles /api/parse and /api/download automatically.
+    // Local dev only: proxy to the FastAPI backend at :8000.
+    // Production requests should target Railway via NEXT_PUBLIC_API_BASE_URL.
     if (process.env.NODE_ENV !== "development") {
       return [];
     }
