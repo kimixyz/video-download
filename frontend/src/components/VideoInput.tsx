@@ -61,13 +61,23 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
         body: JSON.stringify({ url: extracted }),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      const isJsonResponse = contentType.includes("application/json");
+      const payload = isJsonResponse ? await res.json() : await res.text();
 
       if (!res.ok) {
-        throw new Error(data.detail || "解析失败，请稍后重试");
+        if (isJsonResponse && payload && typeof payload === "object" && "detail" in payload) {
+          throw new Error(String(payload.detail || "解析失败，请稍后重试"));
+        }
+
+        throw new Error("解析服务返回了非 JSON 响应，请检查前端环境变量 NEXT_PUBLIC_API_BASE_URL 是否已配置并重新部署 Vercel");
       }
 
-      onResult(data as ParseResult);
+      if (!isJsonResponse) {
+        throw new Error("解析服务返回了 HTML 页面，通常表示前端还在请求错误地址。请确认 NEXT_PUBLIC_API_BASE_URL 已在 Vercel 生效并重新部署");
+      }
+
+      onResult(payload as ParseResult);
     } catch (err) {
       onError(
         err instanceof Error ? err.message : "网络错误，请检查后端服务是否运行",
