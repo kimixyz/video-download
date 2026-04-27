@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import Optional
 
 
@@ -23,3 +23,13 @@ class ParseResponse(BaseModel):
     platform: str
     duration: Optional[int] = None
     formats: list[VideoFormat]
+
+
+class ErrorDetail(BaseModel):
+    code: str
+    message: str
+    details: Optional[str] = None
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail

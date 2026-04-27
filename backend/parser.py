@@ -6,33 +6,16 @@ import httpx
 import yt_dlp
 
 from models import ParseResponse, VideoFormat
-
-
-# ── platform detection ────────────────────────────────────────────────────────
-
-PLATFORM_PATTERNS: list[tuple[str, str]] = [
-    (r"douyin\.com|douyinvideo\.com|iesdouyin\.com", "douyin"),
-    (r"ixigua\.com", "xigua"),
-    (r"toutiao\.com|toutiaoimg\.com", "toutiao"),
-    (r"bilibili\.com|b23\.tv", "bilibili"),
-    (r"xiaohongshu\.com|xhslink\.com", "xiaohongshu"),
-    (r"kuaishou\.com|gifshow\.com", "kuaishou"),
-    (r"weibo\.com|t\.cn", "weibo"),
-    (r"youtube\.com|youtu\.be", "youtube"),
-    (r"tiktok\.com", "tiktok"),
-    (r"twitter\.com|x\.com|t\.co", "twitter"),
-]
+from video_rules import (
+    browser_cookie_platforms,
+    detect_platform as shared_detect_platform,
+    extract_share_url,
+)
 
 
 def extract_url(text: str) -> str:
     """Extract the first http/https URL from share text (e.g. Douyin/WeChat share strings)."""
-    match = re.search(r'https?://[^\s\u3000\uff0c\u3002\uff01\uff1f\u3001]+', text)
-    if match:
-        url = match.group(0)
-        # Strip trailing punctuation that may have been captured
-        url = re.sub(r'[.,;:!?\)\]\u3002\uff01\uff1f]+$', '', url)
-        return _normalize_url(url)
-    return text.strip()
+    return _normalize_url(extract_share_url(text))
 
 
 def _normalize_url(url: str) -> str:
@@ -46,10 +29,7 @@ def _strip_ansi(text: str) -> str:
 
 
 def detect_platform(url: str) -> str:
-    for pattern, name in PLATFORM_PATTERNS:
-        if re.search(pattern, url, re.IGNORECASE):
-            return name
-    return "unknown"
+    return shared_detect_platform(url)
 
 
 # ── quality label ─────────────────────────────────────────────────────────────
@@ -88,8 +68,7 @@ def _base_opts(platform: str) -> dict:
     }
 
     # Platforms where reading Chrome cookies improves results
-    cookie_platforms = {"bilibili", "youtube", "twitter", "tiktok"}
-    if platform in cookie_platforms:
+    if platform in browser_cookie_platforms():
         opts["cookiesfrombrowser"] = ("chrome",)
 
     # Douyin: use Referer to get watermark-free stream

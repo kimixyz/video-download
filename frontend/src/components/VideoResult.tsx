@@ -3,24 +3,11 @@
 import Image from "next/image";
 import { ParseResult } from "./VideoInput";
 import FormatList from "./FormatList";
+import { getPlatformLabel } from "@/lib/videoRules";
 
 interface Props {
   result: ParseResult;
 }
-
-const PLATFORM_LABELS: Record<string, string> = {
-  douyin: "抖音",
-  xigua: "西瓜视频",
-  toutiao: "今日头条",
-  bilibili: "B站",
-  xiaohongshu: "小红书",
-  kuaishou: "快手",
-  weibo: "微博",
-  youtube: "YouTube",
-  tiktok: "TikTok",
-  twitter: "Twitter/X",
-  unknown: "未知平台",
-};
 
 function formatDuration(seconds?: number): string {
   if (!seconds) return "";
@@ -32,7 +19,7 @@ function formatDuration(seconds?: number): string {
 }
 
 export default function VideoResult({ result }: Props) {
-  const platformLabel = PLATFORM_LABELS[result.platform] || result.platform;
+  const platformLabel = getPlatformLabel(result.platform);
   const duration = formatDuration(result.duration);
 
   return (

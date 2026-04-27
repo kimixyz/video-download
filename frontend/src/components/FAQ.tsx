@@ -1,11 +1,12 @@
-"use client";
+import { videoPlatforms } from "@/lib/videoRules";
 
-import { useState } from "react";
+const supportedPlatformNamesText = videoPlatforms.map((platform) => platform.displayName).join("、");
+const supportedPlatformCount = videoPlatforms.length;
 
 const FAQS = [
   {
     q: "支持哪些平台解析下载？",
-    a: "支持抖音、西瓜视频、今日头条、B站、小红书、快手、微博、YouTube、TikTok、Twitter/X，共 10 个主流平台。",
+    a: `支持 ${supportedPlatformNamesText}，共 ${supportedPlatformCount} 个主流平台。`,
   },
   {
     q: "视频下载的清晰度如何？",
@@ -34,26 +35,19 @@ const FAQS = [
 ];
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
   return (
     <section className="py-12 px-4 max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold text-center text-white mb-8">常见问题</h2>
       <div className="space-y-3">
         {FAQS.map((item, i) => (
-          <div
+          <details
             key={i}
             className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden"
           >
-            <button
-              className="w-full flex items-center justify-between px-5 py-4 text-left text-white font-medium hover:bg-white/5 transition-colors"
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            >
+            <summary className="w-full flex items-center justify-between px-5 py-4 text-left text-white font-medium hover:bg-white/5 transition-colors cursor-pointer list-none">
               <span>{item.q}</span>
               <svg
-                className={`w-5 h-5 text-gray-400 shrink-0 transition-transform duration-200 ${
-                  openIndex === i ? "rotate-180" : ""
-                }`}
+                className="w-5 h-5 text-gray-400 shrink-0 transition-transform duration-200 open:rotate-180"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -61,13 +55,11 @@ export default function FAQ() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
-            </button>
-            {openIndex === i && (
-              <div className="px-5 pb-4 text-gray-400 text-sm leading-relaxed">
-                {item.a}
-              </div>
-            )}
-          </div>
+            </summary>
+            <div className="px-5 pb-4 text-gray-400 text-sm leading-relaxed">
+              {item.a}
+            </div>
+          </details>
         ))}
       </div>
     </section>

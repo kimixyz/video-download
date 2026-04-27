@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { buildApiUrl } from "@/lib/api";
+import { buildApiUrl, extractApiErrorMessage } from "@/lib/api";
+import { extractShareUrl } from "@/lib/videoRules";
 
 interface Props {
   onResult: (data: ParseResult) => void;
@@ -32,12 +33,6 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /** Extract the first http/https URL from share text like Douyin/WeChat share strings */
-  const extractUrl = (text: string): string => {
-    const match = text.match(/https?:\/\/[^\s，。！？、\u3000]+/);
-    return match ? match[0].replace(/[.,;:!?）)\]]+$/, "") : text;
-  };
-
   const handleParse = async () => {
     const trimmed = url.trim();
     if (!trimmed) {
@@ -45,7 +40,7 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
       return;
     }
 
-    const extracted = extractUrl(trimmed);
+    const extracted = extractShareUrl(trimmed);
     if (extracted !== trimmed) {
       setUrl(extracted);
     }
@@ -66,11 +61,11 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
       const payload = isJsonResponse ? await res.json() : await res.text();
 
       if (!res.ok) {
-        if (isJsonResponse && payload && typeof payload === "object" && "detail" in payload) {
-          throw new Error(String(payload.detail || "解析失败，请稍后重试"));
-        }
-
-        throw new Error("解析服务返回了非 JSON 响应，请检查前端环境变量 NEXT_PUBLIC_API_BASE_URL 是否已配置并重新部署 Vercel");
+        throw new Error(
+          isJsonResponse
+            ? extractApiErrorMessage(payload, "解析失败，请稍后重试")
+            : "解析服务返回了非 JSON 响应，请检查前端环境变量 NEXT_PUBLIC_API_BASE_URL 是否已配置并重新部署 Vercel",
+        );
       }
 
       if (!isJsonResponse) {
@@ -96,12 +91,7 @@ export default function VideoInput({ onResult, onError, onLoading }: Props) {
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
-        // Auto-extract URL from share text (e.g. Douyin/WeChat share strings)
-        const match = text.match(/https?:\/\/[^\s，。！？、\u3000]+/);
-        const extracted = match
-          ? match[0].replace(/[.,;:!?）)\]]+$/, "")
-          : text;
-        setUrl(extracted);
+        setUrl(extractShareUrl(text));
       }
     } catch {
       // clipboard access denied, ignore

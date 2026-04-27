@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    externalDir: true,
+  },
   async rewrites() {
     // Local dev only: proxy to the FastAPI backend at :8000.
     // Production requests should target Railway via NEXT_PUBLIC_API_BASE_URL.

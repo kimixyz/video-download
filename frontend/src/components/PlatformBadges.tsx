@@ -1,8 +1,9 @@
-"use client";
+import type { ReactNode } from "react";
 
-const PLATFORMS = [
-  {
-    name: "抖音",
+import { videoPlatforms } from "@/lib/videoRules";
+
+const PLATFORM_BADGE_STYLES: Record<string, { color: string; textColor: string; icon: ReactNode }> = {
+  douyin: {
     color: "from-gray-900 to-black",
     textColor: "text-white",
     icon: (
@@ -11,8 +12,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "西瓜视频",
+  xigua: {
     color: "from-orange-500 to-red-500",
     textColor: "text-white",
     icon: (
@@ -28,8 +28,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "今日头条",
+  toutiao: {
     color: "from-red-500 to-red-600",
     textColor: "text-white",
     icon: (
@@ -52,8 +51,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "B站",
+  bilibili: {
     color: "from-blue-400 to-cyan-400",
     textColor: "text-white",
     icon: (
@@ -62,8 +60,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "小红书",
+  xiaohongshu: {
     color: "from-red-400 to-rose-500",
     textColor: "text-white",
     icon: (
@@ -72,8 +69,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "快手",
+  kuaishou: {
     color: "from-orange-400 to-yellow-400",
     textColor: "text-white",
     icon: (
@@ -82,8 +78,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "微博",
+  weibo: {
     color: "from-red-500 to-orange-400",
     textColor: "text-white",
     icon: (
@@ -109,8 +104,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "YouTube",
+  youtube: {
     color: "from-red-600 to-red-700",
     textColor: "text-white",
     icon: (
@@ -119,8 +113,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "TikTok",
+  tiktok: {
     color: "from-gray-900 to-gray-800",
     textColor: "text-white",
     icon: (
@@ -129,8 +122,7 @@ const PLATFORMS = [
       </svg>
     ),
   },
-  {
-    name: "Twitter/X",
+  twitter: {
     color: "from-gray-950 to-black",
     textColor: "text-white",
     icon: (
@@ -139,24 +131,27 @@ const PLATFORMS = [
       </svg>
     ),
   },
-];
+};
 
 export default function PlatformBadges() {
   return (
     <section className="py-12 px-4">
       <h2 className="text-center text-xl font-semibold text-gray-300 mb-8">
-        支持 10+ 主流平台
+        支持 {videoPlatforms.length}+ 主流平台
       </h2>
       <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
-        {PLATFORMS.map((p) => (
-          <div
-            key={p.name}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r ${p.color} ${p.textColor} text-sm font-medium shadow-lg`}
-          >
-            {p.icon}
-            {p.name}
-          </div>
-        ))}
+        {videoPlatforms.map((platform) => {
+          const style = PLATFORM_BADGE_STYLES[platform.id];
+          return (
+            <div
+              key={platform.id}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full bg-linear-to-r ${style.color} ${style.textColor} text-sm font-medium shadow-lg`}
+            >
+              {style.icon}
+              {platform.displayName}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

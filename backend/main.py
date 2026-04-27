@@ -3,12 +3,15 @@ import urllib.parse
 from contextlib import asynccontextmanager
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 
-from models import ParseRequest, ParseResponse
+from models import ErrorDetail, ErrorResponse, ParseRequest, ParseResponse
 from parser import parse_video
+from video_rules import referer_for_url
 
 
 # ── app setup ─────────────────────────────────────────────────────────────────
@@ -32,6 +35,37 @@ app.add_middleware(
 )
 
 
+def api_error(status_code: int, code: str, message: str, details: str | None = None) -> HTTPException:
+    error_detail = ErrorDetail(code=code, message=message, details=details)
+    return HTTPException(status_code=status_code, detail=error_detail.model_dump(exclude_none=True))
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(_: Request, exc: HTTPException):
+    detail = exc.detail
+    if isinstance(detail, dict):
+        error = ErrorDetail(
+            code=str(detail.get("code") or ("bad_request" if exc.status_code < 500 else "server_error")),
+            message=str(detail.get("message") or "请求失败"),
+            details=str(detail["details"]) if detail.get("details") is not None else None,
+        )
+    else:
+        error = ErrorDetail(
+            code="bad_request" if exc.status_code < 500 else "server_error",
+            message=str(detail),
+        )
+    payload = ErrorResponse(error=error)
+    return JSONResponse(status_code=exc.status_code, content=payload.model_dump(exclude_none=True))
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_: Request, exc: Exception):  # noqa: BLE001
+    payload = ErrorResponse(
+        error=ErrorDetail(code="internal_error", message="服务器内部错误", details=str(exc)),
+    )
+    return JSONResponse(status_code=500, content=payload.model_dump(exclude_none=True))
+
+
 @app.get("/healthz")
 async def healthcheck() -> dict[str, str]:
     """Lightweight healthcheck for Railway and other reverse proxies."""
@@ -45,13 +79,11 @@ async def parse(req: ParseRequest) -> ParseResponse:
     """Parse a video URL and return available formats."""
     url = req.url.strip()
     if not url:
-        raise HTTPException(status_code=400, detail="URL 不能为空")
+        raise api_error(400, "invalid_url", "URL 不能为空")
     try:
-        result = parse_video(url)
+        result = await run_in_threadpool(parse_video, url)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=500, detail=f"服务器内部错误：{exc}") from exc
+        raise api_error(400, "parse_failed", str(exc)) from exc
     return result
 
 
@@ -65,7 +97,7 @@ async def download(
 
     # Basic sanity check – must be an http/https URL
     if not decoded_url.startswith(("http://", "https://")):
-        raise HTTPException(status_code=400, detail="无效的视频地址")
+        raise api_error(400, "invalid_download_url", "无效的视频地址")
 
     # Sanitize filename to prevent header injection
     safe_filename = urllib.parse.quote(filename.replace('"', "").replace("\n", "").replace("\r", ""))
@@ -82,7 +114,7 @@ async def download(
                 "Chrome/124.0.0.0 Safari/537.36"
             )
         ),
-        "Referer": _referer_for(decoded_url),
+        "Referer": referer_for_url(decoded_url),
         "Accept": "*/*",
     }
 
@@ -102,27 +134,3 @@ async def download(
         },
     )
 
-
-# ── helpers ───────────────────────────────────────────────────────────────────
-
-def _referer_for(url: str) -> str:
-    """Return an appropriate Referer header value based on the URL domain."""
-    referer_map = [
-        ("douyin.com", "https://www.douyin.com/"),
-        ("snssdk.com", "https://www.douyin.com/"),
-        ("douyinstatic.com", "https://www.douyin.com/"),
-        ("ixigua.com", "https://www.ixigua.com/"),
-        ("bilibili.com", "https://www.bilibili.com/"),
-        ("xiaohongshu.com", "https://www.xiaohongshu.com/"),
-        ("xhslink.com", "https://www.xiaohongshu.com/"),
-        ("kuaishou.com", "https://www.kuaishou.com/"),
-        ("weibo.com", "https://weibo.com/"),
-        ("youtube.com", "https://www.youtube.com/"),
-        ("tiktok.com", "https://www.tiktok.com/"),
-        ("twitter.com", "https://twitter.com/"),
-        ("x.com", "https://x.com/"),
-    ]
-    for domain, referer in referer_map:
-        if domain in url:
-            return referer
-    return url  # fallback: use the URL itself as referer
