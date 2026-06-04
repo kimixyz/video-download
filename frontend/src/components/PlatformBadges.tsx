@@ -133,6 +133,17 @@ const PLATFORM_BADGE_STYLES: Record<string, { color: string; textColor: string; 
   },
 };
 
+const DEFAULT_PLATFORM_BADGE_STYLE = {
+  color: "from-gray-700 to-gray-800",
+  textColor: "text-white",
+  icon: (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+};
+
 export default function PlatformBadges() {
   return (
     <section className="py-12 px-4">
@@ -141,7 +152,7 @@ export default function PlatformBadges() {
       </h2>
       <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
         {videoPlatforms.map((platform) => {
-          const style = PLATFORM_BADGE_STYLES[platform.id];
+          const style = PLATFORM_BADGE_STYLES[platform.id] ?? DEFAULT_PLATFORM_BADGE_STYLE;
           return (
             <div
               key={platform.id}

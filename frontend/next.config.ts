@@ -1,19 +1,26 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname, ".."),
+  },
   experimental: {
     externalDir: true,
   },
   async rewrites() {
-    // Local dev only: proxy to the FastAPI backend at :8000.
-    // Production requests should target Railway via NEXT_PUBLIC_API_BASE_URL.
-    if (process.env.NODE_ENV !== "development") {
+    // When a public API base URL is configured, the browser calls that backend directly.
+    // Otherwise, keep /api/* usable for local dev and local production smoke tests.
+    if (process.env.NEXT_PUBLIC_API_BASE_URL) {
       return [];
     }
+
+    const apiProxyTarget = process.env.API_PROXY_TARGET || "http://localhost:8000";
+
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8000/api/:path*",
+        destination: `${apiProxyTarget.replace(/\/$/, "")}/api/:path*`,
       },
     ];
   },

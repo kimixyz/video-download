@@ -1,18 +1,39 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 
-RULES_PATH = Path(__file__).resolve().parents[1] / "shared" / "video-rules.json"
+def _resolve_rules_path() -> Path:
+    """Locate shared/video-rules.json across both monorepo and standalone deploys.
+
+    Lookup order:
+      1. $VIDEO_RULES_PATH (explicit override)
+      2. ../shared/video-rules.json (monorepo layout — single source of truth in dev)
+      3. ./shared/video-rules.json next to this module (bundled copy for standalone
+         deploys such as a Hugging Face Space where ../shared is unavailable)
+    """
+    here = Path(__file__).resolve()
+    candidates = [
+        Path(os.environ["VIDEO_RULES_PATH"]) if os.getenv("VIDEO_RULES_PATH") else None,
+        here.parents[1] / "shared" / "video-rules.json",
+        here.parent / "shared" / "video-rules.json",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        "video-rules.json not found. Set VIDEO_RULES_PATH or bundle it under backend/shared/."
+    )
 
 
 @lru_cache(maxsize=1)
 def load_video_rules() -> dict[str, Any]:
-    with RULES_PATH.open("r", encoding="utf-8") as file_handle:
+    with _resolve_rules_path().open("r", encoding="utf-8") as file_handle:
         return json.load(file_handle)
 
 

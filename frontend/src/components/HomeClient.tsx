@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import VideoInput, { ParseResult } from "@/components/VideoInput";
+import VideoInput from "@/components/VideoInput";
 import VideoResult from "@/components/VideoResult";
+import type { ParseResult } from "@/lib/parseResult";
 
 export default function HomeClient() {
   const [result, setResult] = useState<ParseResult | null>(null);

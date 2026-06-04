@@ -60,8 +60,9 @@ async def http_exception_handler(_: Request, exc: HTTPException):
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(_: Request, exc: Exception):  # noqa: BLE001
+    details = str(exc) if os.getenv("DEBUG_ERRORS") == "1" else None
     payload = ErrorResponse(
-        error=ErrorDetail(code="internal_error", message="服务器内部错误", details=str(exc)),
+        error=ErrorDetail(code="internal_error", message="服务器内部错误", details=details),
     )
     return JSONResponse(status_code=500, content=payload.model_dump(exclude_none=True))
 
@@ -133,4 +134,3 @@ async def download(
             "Cache-Control": "no-cache",
         },
     )
-

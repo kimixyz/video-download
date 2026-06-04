@@ -1,0 +1,4 @@
+# 自动申请并续期 Let's Encrypt 证书，反代到 api 容器的 7860 端口
+{$BACKEND_DOMAIN} {
+	reverse_proxy api:7860
+}

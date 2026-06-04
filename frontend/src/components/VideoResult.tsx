@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { ParseResult } from "./VideoInput";
 import FormatList from "./FormatList";
 import { getPlatformLabel } from "@/lib/videoRules";
+import type { ParseResult } from "@/lib/parseResult";
 
 interface Props {
   result: ParseResult;

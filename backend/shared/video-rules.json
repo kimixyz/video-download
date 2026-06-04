@@ -1,0 +1,76 @@
+{
+  "shareTextUrlPattern": "https?://[^\\s\\u3000，。！？、]+",
+  "shareTextTrailingPunctuationPattern": "[.,;:!?）)\\]]+$",
+  "platforms": [
+    {
+      "id": "douyin",
+      "displayName": "抖音",
+      "aliases": ["douyin.com", "douyinvideo.com", "iesdouyin.com", "snssdk.com", "douyinstatic.com"],
+      "referer": "https://www.douyin.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "xigua",
+      "displayName": "西瓜视频",
+      "aliases": ["ixigua.com"],
+      "referer": "https://www.ixigua.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "toutiao",
+      "displayName": "今日头条",
+      "aliases": ["toutiao.com", "toutiaoimg.com"],
+      "referer": "https://www.toutiao.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "bilibili",
+      "displayName": "B站",
+      "aliases": ["bilibili.com", "b23.tv"],
+      "referer": "https://www.bilibili.com/",
+      "useBrowserCookies": true
+    },
+    {
+      "id": "xiaohongshu",
+      "displayName": "小红书",
+      "aliases": ["xiaohongshu.com", "xhslink.com"],
+      "referer": "https://www.xiaohongshu.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "kuaishou",
+      "displayName": "快手",
+      "aliases": ["kuaishou.com", "gifshow.com"],
+      "referer": "https://www.kuaishou.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "weibo",
+      "displayName": "微博",
+      "aliases": ["weibo.com", "t.cn"],
+      "referer": "https://weibo.com/",
+      "useBrowserCookies": false
+    },
+    {
+      "id": "youtube",
+      "displayName": "YouTube",
+      "aliases": ["youtube.com", "youtu.be"],
+      "referer": "https://www.youtube.com/",
+      "useBrowserCookies": true
+    },
+    {
+      "id": "tiktok",
+      "displayName": "TikTok",
+      "aliases": ["tiktok.com"],
+      "referer": "https://www.tiktok.com/",
+      "useBrowserCookies": true
+    },
+    {
+      "id": "twitter",
+      "displayName": "Twitter/X",
+      "aliases": ["twitter.com", "x.com", "t.co"],
+      "referer": "https://x.com/",
+      "useBrowserCookies": true
+    }
+  ]
+}

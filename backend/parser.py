@@ -1,5 +1,7 @@
 import json
+import os
 import re
+import urllib.parse
 from typing import Optional
 
 import httpx
@@ -67,9 +69,13 @@ def _base_opts(platform: str) -> dict:
         "merge_output_format": "mp4",
     }
 
-    # Platforms where reading Chrome cookies improves results
+    # Platforms where cookies improve results (bilibili / youtube / tiktok / twitter).
+    # On a headless server there is no local Chrome to read, so we accept an optional
+    # Netscape-format cookie file via $YTDLP_COOKIES_FILE instead of cookiesfrombrowser.
     if platform in browser_cookie_platforms():
-        opts["cookiesfrombrowser"] = ("chrome",)
+        cookie_file = os.getenv("YTDLP_COOKIES_FILE")
+        if cookie_file and os.path.isfile(cookie_file):
+            opts["cookiefile"] = cookie_file
 
     # Douyin: use Referer to get watermark-free stream
     if platform == "douyin":
@@ -79,6 +85,17 @@ def _base_opts(platform: str) -> dict:
                 "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
                 "AppleWebKit/605.1.15 (KHTML, like Gecko) "
                 "Version/17.0 Mobile/15E148 Safari/604.1"
+            ),
+        }
+
+    # Bilibili: a desktop UA + Referer are required, otherwise the API rejects
+    # the request with HTTP 412 (Precondition Failed) via its risk control.
+    if platform == "bilibili":
+        opts["http_headers"] = {
+            "Referer": "https://www.bilibili.com/",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
             ),
         }
 
@@ -115,6 +132,88 @@ def _deduplicate_formats(formats: list[VideoFormat]) -> list[VideoFormat]:
             if f.filesize and (not existing.filesize or f.filesize > existing.filesize):
                 seen[f.quality] = f
     return list(seen.values())
+
+
+def _dedupe_strings(values: list[str]) -> list[str]:
+    """Keep first occurrence order while removing duplicates and blanks."""
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        normalized = value.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+    return result
+
+
+def _extract_url_candidates(value: object) -> list[str]:
+    """Collect URL-like strings from nested Douyin payloads."""
+    urls: list[str] = []
+    if isinstance(value, str):
+        if value.startswith(("http://", "https://")):
+            urls.append(value)
+        return urls
+
+    if isinstance(value, list):
+        for item in value:
+            urls.extend(_extract_url_candidates(item))
+        return urls
+
+    if isinstance(value, dict):
+        for key in ("url_list", "backup_url_list", "play_addr", "download_addr", "bit_rate", "main_url", "src", "url"):
+            if key in value:
+                urls.extend(_extract_url_candidates(value[key]))
+        return urls
+
+    return urls
+
+
+def _normalize_douyin_play_url(url: str, ratio: str | None = None) -> str:
+    """Remove watermark hints and normalize a Douyin play URL.
+
+    Douyin payloads are not fully stable. Some responses expose watermark URLs
+    under `playwm`, while others expose `play` URLs with extra query params that
+    still point at a watermarked rendition. This helper rewrites both shapes.
+    """
+    parsed = urllib.parse.urlsplit(url)
+    path = parsed.path.replace("/playwm/", "/play/")
+    path = path.replace("/playwm", "/play")
+
+    query_items = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    cleaned_items: list[tuple[str, str]] = []
+    for key, value in query_items:
+        if key in {"watermark", "logo", "cut_type", "line", "value"}:
+            continue
+        cleaned_items.append((key, value))
+
+    if ratio is not None:
+        cleaned_items = [(key, value) for key, value in cleaned_items if key != "ratio"]
+        cleaned_items.append(("ratio", ratio))
+
+    rebuilt = parsed._replace(
+        path=path,
+        query=urllib.parse.urlencode(cleaned_items, doseq=True),
+    )
+    return urllib.parse.urlunsplit(rebuilt)
+
+
+def _select_douyin_play_url(video: dict) -> str:
+    """Pick the best available Douyin playback URL."""
+    candidates = _dedupe_strings(
+        _extract_url_candidates(video.get("play_addr"))
+        + _extract_url_candidates(video.get("download_addr"))
+        + _extract_url_candidates(video.get("bit_rate"))
+    )
+    if not candidates:
+        raise ValueError("未找到可下载的视频链接")
+
+    # Prefer already-clean play URLs before falling back to rewrite.
+    for candidate in candidates:
+        if "/play/" in candidate and "/playwm/" not in candidate:
+            return candidate
+
+    return candidates[0]
 
 
 # ── douyin custom handler ─────────────────────────────────────────────────────
@@ -192,28 +291,7 @@ def _parse_douyin_from_html(html: str) -> ParseResponse:
         raise ValueError("该内容为抖音图文笔记（多图+音乐），暂不支持视频下载")
 
     video = item.get("video") or {}
-    play_addr = video.get("play_addr") or {}
-    # url_list contains full playback URLs; uri is just an identifier key
-    play_urls: list[str] = play_addr.get("url_list") or []
-    wm_url: str = play_urls[0] if play_urls else ""
-
-    if not wm_url:
-        raise ValueError("未找到可下载的视频链接")
-
-    # Build a no-watermark URL by replacing playwm→play endpoint.
-    # The `ratio` parameter selects quality: 1080p / 720p / 360p.
-    def _nowm(wm: str, ratio: str) -> str:
-        """Strip watermark and set quality ratio on aweme play URL."""
-        url = re.sub(r'/playwm/', '/play/', wm)
-        url = re.sub(r'ratio=[^&]+', f'ratio={ratio}', url)
-        if 'ratio=' not in url:
-            sep = '&' if '?' in url else '?'
-            url += f'{sep}ratio={ratio}'
-        return url
-
-    height: int = video.get("height") or 0
-    width: int = video.get("width") or 0
-    is_portrait = height >= width  # 竖屏视频
+    source_url = _select_douyin_play_url(video)
 
     # 3 quality tiers (no watermark)
     quality_tiers = [
@@ -226,7 +304,7 @@ def _parse_douyin_from_html(html: str) -> ParseResponse:
         VideoFormat(
             format_id=fid,
             quality=label,
-            url=_nowm(wm_url, ratio),
+            url=_normalize_douyin_play_url(source_url, ratio=ratio),
             ext="mp4",
             vcodec="h264",
             acodec="aac",
@@ -250,6 +328,39 @@ def _parse_douyin_from_html(html: str) -> ParseResponse:
     )
 
 
+# ── bilibili url normalization ────────────────────────────────────────────────
+
+_BILIBILI_DESKTOP_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
+
+def _normalize_bilibili_url(url: str) -> str:
+    """Resolve b23.tv short links and rewrite to the canonical desktop URL.
+
+    yt-dlp's BiliBili extractor only matches ``www.bilibili.com/video/<id>``.
+    Short links (b23.tv) and the mobile host (m.bilibili.com) fall through to
+    the generic extractor, which Bilibili blocks with HTTP 412. We follow the
+    redirect, extract the BV/av id, and rebuild a www URL yt-dlp recognizes.
+    """
+    resolved = url
+    if "b23.tv" in url:
+        try:
+            with httpx.Client(
+                follow_redirects=True, timeout=10,
+                headers={"User-Agent": _BILIBILI_DESKTOP_UA},
+            ) as client:
+                resolved = str(client.get(url).url)
+        except Exception:
+            return url  # network failure → let yt-dlp try the original
+
+    match = re.search(r"(BV[0-9A-Za-z]+|av\d+)", resolved)
+    if not match:
+        return resolved
+    return f"https://www.bilibili.com/video/{match.group(1)}"
+
+
 # ── main entry ────────────────────────────────────────────────────────────────
 
 def parse_video(url: str) -> ParseResponse:
@@ -269,6 +380,11 @@ def parse_video(url: str) -> ParseResponse:
             raise
         except Exception:
             pass
+
+    # Bilibili: expand b23.tv short links and rewrite to www host so yt-dlp's
+    # BiliBili extractor matches (otherwise it falls to generic → HTTP 412).
+    if platform == "bilibili":
+        url = _normalize_bilibili_url(url)
 
     # Toutiao: follow redirect to resolve short URLs (e.g. m.toutiao.com/is/xxx/)
     if platform == "toutiao":

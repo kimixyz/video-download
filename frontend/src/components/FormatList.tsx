@@ -1,7 +1,7 @@
 "use client";
 
-import { VideoFormat } from "./VideoInput";
 import { buildDownloadUrl } from "@/lib/api";
+import type { VideoFormat } from "@/lib/parseResult";
 
 interface Props {
   formats: VideoFormat[];
