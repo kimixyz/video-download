@@ -150,60 +150,60 @@ export default function FormatList({ formats, title }: Props) {
           const isProcessing = processingId === fmt.format_id;
 
           return (
-          <div
-            key={fmt.format_id}
-            className="flex items-center justify-between gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`${qualityColor(fmt.quality)} text-white text-xs font-bold px-2 py-1 rounded-md min-w-17.5 text-center`}
-              >
-                {fmt.quality}
-              </span>
-              <div className="flex flex-col">
-                <span className="text-white text-sm font-medium uppercase">{fmt.ext}</span>
-                {fmt.filesize && (
-                  <span className="text-gray-500 text-xs">{formatFileSize(fmt.filesize)}</span>
-                )}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => void handleDownload(fmt)}
-              disabled={Boolean(processingId)}
-              className="flex min-w-28 items-center justify-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200 shadow"
+            <div
+              key={fmt.format_id}
+              className="flex items-center justify-between gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 transition-colors"
             >
-              {isProcessing ? (
-                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              )}
-              {isProcessing
-                ? delogoEnabled
-                  ? "视频处理中"
-                  : "下载中"
-                : delogoEnabled
-                  ? "处理下载"
-                  : "下载"}
-            </button>
-          </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`${qualityColor(fmt.quality)} text-white text-xs font-bold px-2 py-1 rounded-md min-w-17.5 text-center`}
+                >
+                  {fmt.quality}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-white text-sm font-medium uppercase">{fmt.ext}</span>
+                  {fmt.filesize && (
+                    <span className="text-gray-500 text-xs">{formatFileSize(fmt.filesize)}</span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void handleDownload(fmt)}
+                disabled={Boolean(processingId)}
+                className="flex min-w-28 items-center justify-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200 shadow"
+              >
+                {isProcessing ? (
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                )}
+                {isProcessing
+                  ? delogoEnabled
+                    ? "视频处理中"
+                    : "下载中"
+                  : delogoEnabled
+                    ? "处理下载"
+                    : "下载"}
+              </button>
+            </div>
           );
         })}
       </div>
