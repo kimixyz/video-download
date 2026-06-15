@@ -6,7 +6,8 @@ on Hugging Face; the frontend stays on Vercel and points to the new Space URL.
 ## Why this works for free
 
 - HF free CPU Spaces give 16 GB RAM and generous egress — fine for `yt-dlp`
-  parsing **and** the `/api/download` proxy-stream.
+  parsing, the `/api/download` proxy-stream, and occasional optional FFmpeg
+  post-processing.
 - The Space sleeps after long inactivity and wakes on the next request
   (first request after sleep is slower). No hard request/bandwidth caps like
   serverless tiers.
@@ -106,6 +107,9 @@ cp shared/video-rules.json backend/shared/video-rules.json
   work without cookies.
 - **Cold start**: first request after the Space sleeps takes longer — consider a
   cron ping to `/healthz` if you want it always warm.
-- **No ffmpeg in the image**: the app streams a single direct format URL and never
-  merges server-side, so ffmpeg isn't required.
+- **Optional FFmpeg post-processing**: `/api/download` streams direct video by
+  default. When the frontend sends `postprocess=delogo` with `wm_x/wm_y/wm_w/wm_h`,
+  the Space downloads the source to `/tmp`, runs FFmpeg's `delogo` filter, then
+  returns a re-encoded mp4. This is slower and may leave blur/repair artifacts,
+  but it helps with fixed corner watermarks that are already embedded in frames.
 ```

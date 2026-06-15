@@ -30,11 +30,27 @@ export function buildApiUrl(path: string): string {
   return `${apiBaseUrl}${normalizedPath}`;
 }
 
-export function buildDownloadUrl(videoUrl: string, filename: string): string {
+export interface DelogoOptions {
+  enabled: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export function buildDownloadUrl(videoUrl: string, filename: string, delogo?: DelogoOptions): string {
   const searchParams = new URLSearchParams({
     url: videoUrl,
     filename,
   });
+
+  if (delogo?.enabled) {
+    searchParams.set("postprocess", "delogo");
+    searchParams.set("wm_x", String(delogo.x));
+    searchParams.set("wm_y", String(delogo.y));
+    searchParams.set("wm_w", String(delogo.width));
+    searchParams.set("wm_h", String(delogo.height));
+  }
 
   return `${buildApiUrl("/api/download")}?${searchParams.toString()}`;
 }

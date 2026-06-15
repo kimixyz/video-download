@@ -57,6 +57,56 @@ def quality_label(fmt: dict) -> str:
 
 # ── base ydl opts ─────────────────────────────────────────────────────────────
 
+_BILIBILI_ANON_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+_bilibili_cookie_cache: dict[str, float | str] = {}
+
+
+def _bilibili_anonymous_cookiefile() -> Optional[str]:
+    """Fetch an anonymous buvid3 cookie from bilibili.com and write it to a
+    Netscape cookie file for yt-dlp.
+
+    Overseas IPs (e.g. the Hugging Face Space) get HTTP 412 on cookie-less
+    Bilibili requests. A fresh anonymous buvid3 from the homepage is enough to
+    pass risk control. The path is cached for an hour so we don't hit the
+    homepage on every parse.
+    """
+    import time
+
+    cached_path = _bilibili_cookie_cache.get("path")
+    cached_at = _bilibili_cookie_cache.get("at", 0)
+    if cached_path and isinstance(cached_at, float) and (time.time() - cached_at) < 3600 \
+            and os.path.isfile(str(cached_path)):
+        return str(cached_path)
+
+    try:
+        with httpx.Client(timeout=10, headers={"User-Agent": _BILIBILI_ANON_UA}) as client:
+            resp = client.get("https://www.bilibili.com/")
+            buvid3 = resp.cookies.get("buvid3", "")
+    except Exception:
+        return None
+
+    if not buvid3:
+        return None
+
+    import tempfile
+
+    expires = int(time.time()) + 86400
+    fd, path = tempfile.mkstemp(prefix="bili_cookies_", suffix=".txt")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write("# Netscape HTTP Cookie File\n")
+            handle.write(f".bilibili.com\tTRUE\t/\tFALSE\t{expires}\tbuvid3\t{buvid3}\n")
+    except Exception:
+        return None
+
+    _bilibili_cookie_cache["path"] = path
+    _bilibili_cookie_cache["at"] = time.time()
+    return path
+
+
 def _base_opts(platform: str) -> dict:
     """Return yt-dlp options tailored for the given platform."""
     opts: dict = {
@@ -76,6 +126,13 @@ def _base_opts(platform: str) -> dict:
         cookie_file = os.getenv("YTDLP_COOKIES_FILE")
         if cookie_file and os.path.isfile(cookie_file):
             opts["cookiefile"] = cookie_file
+        elif platform == "bilibili":
+            # No user cookie configured. Bilibili rejects cookie-less requests
+            # from overseas IPs with HTTP 412, so fall back to a fresh anonymous
+            # buvid3 cookie fetched from the homepage.
+            anon = _bilibili_anonymous_cookiefile()
+            if anon:
+                opts["cookiefile"] = anon
 
     # Douyin: use Referer to get watermark-free stream
     if platform == "douyin":
