@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buildDownloadUrl } from "@/lib/api";
+import { buildDownloadUrl, extractApiErrorMessage } from "@/lib/api";
 import type { VideoFormat } from "@/lib/parseResult";
 
 interface Props {
@@ -37,6 +37,8 @@ function formatFileSize(bytes?: number): string {
 export default function FormatList({ formats, title }: Props) {
   const [delogoEnabled, setDelogoEnabled] = useState(false);
   const [box, setBox] = useState({ x: 20, y: 20, width: 600, height: 110 });
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState("");
 
   if (formats.length === 0) return null;
 
@@ -51,6 +53,48 @@ export default function FormatList({ formats, title }: Props) {
   const delogoOptions = {
     enabled: delogoEnabled,
     ...box,
+  };
+
+  const handleDownload = async (format: VideoFormat) => {
+    if (processingId) return;
+
+    const filename = `${title}.${format.ext}`;
+    const downloadUrl = buildDownloadUrl(format.url, filename, delogoOptions);
+    setDownloadError("");
+    setProcessingId(format.format_id);
+
+    try {
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type") || "";
+        const payload = contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
+
+        throw new Error(
+          contentType.includes("application/json")
+            ? extractApiErrorMessage(payload, "下载失败，请稍后重试")
+            : "下载失败，请稍后重试",
+        );
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      setDownloadError(
+        error instanceof Error ? error.message : "下载失败，请稍后重试",
+      );
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   return (
@@ -96,8 +140,16 @@ export default function FormatList({ formats, title }: Props) {
           </div>
         )}
       </div>
+      {downloadError && (
+        <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          {downloadError}
+        </div>
+      )}
       <div className="space-y-2">
-        {formats.map((fmt) => (
+        {formats.map((fmt) => {
+          const isProcessing = processingId === fmt.format_id;
+
+          return (
           <div
             key={fmt.format_id}
             className="flex items-center justify-between gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 transition-colors"
@@ -116,18 +168,44 @@ export default function FormatList({ formats, title }: Props) {
               </div>
             </div>
 
-            <a
-              href={buildDownloadUrl(fmt.url, `${title}.${fmt.ext}`, delogoOptions)}
-              download
-              className="flex items-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200 shadow"
+            <button
+              type="button"
+              onClick={() => void handleDownload(fmt)}
+              disabled={Boolean(processingId)}
+              className="flex min-w-28 items-center justify-center gap-2 bg-linear-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 disabled:cursor-not-allowed disabled:opacity-70 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200 shadow"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              {delogoEnabled ? "处理下载" : "下载"}
-            </a>
+              {isProcessing ? (
+                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              )}
+              {isProcessing
+                ? delogoEnabled
+                  ? "视频处理中"
+                  : "下载中"
+                : delogoEnabled
+                  ? "处理下载"
+                  : "下载"}
+            </button>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
